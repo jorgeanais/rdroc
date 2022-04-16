@@ -43,6 +43,7 @@ class StagingCatalog:
 
 
 class DataLoader:
+    """Loads data from Vizier and writes to disk."""
     def __init__(self) -> None:
         self.staging_list: list[StagingCatalog] = []
         self.catalogs: list[Catalog] = []
@@ -53,28 +54,33 @@ class DataLoader:
             self.staging_list = [StagingCatalog(**c) for c in file_content]
 
     def download_tablelist(self, staging_catalog: StagingCatalog) -> TableList:
+        print(f"Downloading {staging_catalog.name}...")
         return Vizier.get_catalogs(staging_catalog.cds_id)
 
-    def save_tablelist(self, table_list: TableList, path: Path) -> None:
+    def write_tablelist(self, table_list: TableList, path: Path) -> None:
         with open(str(path), "wb") as file:
-            pickle.dump(table_list, file)
+            print(f"Writing to {path}...")
+            pickle.dump(table_list, file, protocol=pickle.HIGHEST_PROTOCOL)
 
     def read_tablelist(self, path: Path) -> TableList:
         with open(str(path), "r") as file:
+            print(f"Reading {path}...")
             return pickle.load(file)
 
     def load_catalogs(self) -> None:
-        for sc in self.staging_list:
-            if sc.tablelist_path.is_file():
-                tl = self.read_tablelist(sc.tablelist_path)
+        for scat in self.staging_list:
+            if scat.tablelist_path.is_file():
+                tl = self.read_tablelist(scat.tablelist_path)
             else:
-                tl = self.download_tablelist(sc)
+                tl = self.download_tablelist(scat)
+                self.write_tablelist(tl, scat.tablelist_path)
 
-            p_table = tl[sc.table_names["clusters_params"]]
-            m_table = tl[sc.table_names["cluster_members"]]
-            c = Catalog(sc.name, sc.cds_id, sc.author, p_table, m_table)
-            self.catalogs.append(c)
+            p_table = tl[scat.table_names["clusters_params"]]
+            m_table = tl[scat.table_names["cluster_members"]]
+            cat = Catalog(scat.name, scat.cds_id, scat.author, p_table, m_table)
+            self.catalogs.append(cat)
 
-    def run(self) -> None:
+    def run(self) -> list[Catalog]:
         self.read_input_catalog_file()
         self.load_catalogs()
+        return self.catalogs
