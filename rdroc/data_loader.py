@@ -44,6 +44,7 @@ class StagingCatalog:
 
 class DataLoader:
     """Loads data from Vizier and writes to disk."""
+
     def __init__(self) -> None:
         self.staging_list: list[StagingCatalog] = []
         self.catalogs: list[Catalog] = []

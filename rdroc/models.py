@@ -23,7 +23,9 @@ class Catalog:
     author: str
     params_table: table.Table = field(repr=False)
     members_table: table.Table = field(repr=False)
-    star_clusters: dict[str, StarCluster] = field(init=False, default_factory=dict, repr=False)
+    star_clusters: dict[str, StarCluster] = field(
+        init=False, default_factory=dict, repr=False
+    )
 
     def __post_init__(self) -> None:
         self.create_star_clusters()
@@ -34,6 +36,11 @@ class Catalog:
         for cl in tqdm(clusters):
             members = self.members_table[self.members_table["Cluster"] == cl].copy()
             params = self.params_table[self.params_table["Cluster"] == cl]
-            coords = SkyCoord(params["RA_ICRS"].data.data, params["DE_ICRS"].data.data, frame="icrs", unit="deg")
+            coords = SkyCoord(
+                params["RA_ICRS"].data.data,
+                params["DE_ICRS"].data.data,
+                frame="icrs",
+                unit="deg",
+            )
             sc = StarCluster(cl, coords, members)
             self.star_clusters[cl] = sc
