@@ -10,8 +10,8 @@ class StarCluster:
     """A Star Cluster representation."""
 
     name: str
-    coordinates: SkyCoord
-    data: table.Table
+    coordinates: SkyCoord = field(repr=False)
+    datatable: table.Table = field(repr=False)
 
 
 @dataclass
@@ -44,3 +44,13 @@ class Catalog:
             )
             sc = StarCluster(cl, coords, members)
             self.star_clusters[cl] = sc
+
+    def get_all_clusters(self) -> dict[StarCluster]:
+        return self.star_clusters
+
+    def list_cluster(self) -> None:
+        for cl in self.star_clusters.values():
+            print(f"{cl.name}")
+
+    def get_cluster(self, cluster_name: str) -> StarCluster:
+        return self.star_clusters[cluster_name]
