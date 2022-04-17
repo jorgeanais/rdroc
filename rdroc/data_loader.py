@@ -64,7 +64,7 @@ class DataLoader:
             pickle.dump(table_list, file, protocol=pickle.HIGHEST_PROTOCOL)
 
     def read_tablelist(self, path: Path) -> TableList:
-        with open(str(path), "r") as file:
+        with open(str(path), "rb") as file:
             print(f"Reading {path}...")
             return pickle.load(file)
 
