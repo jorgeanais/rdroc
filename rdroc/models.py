@@ -12,6 +12,7 @@ class StarCluster:
     name: str
     coordinates: SkyCoord = field(repr=False)
     datatable: table.Table = field(repr=False)
+    paramtable: table.Table = field(repr=False)
 
 
 @dataclass
@@ -34,7 +35,7 @@ class Catalog:
         clusters = table.unique(self.members_table, keys="Cluster")["Cluster"].data.data
         print(f"Creating {self.name} star clusters...")
         for cl in tqdm(clusters):
-            members = self.members_table[self.members_table["Cluster"] == cl].copy()
+            members = self.members_table[self.members_table["Cluster"] == cl]
             params = self.params_table[self.params_table["Cluster"] == cl]
             coords = SkyCoord(
                 params["RA_ICRS"].data.data,
@@ -42,7 +43,7 @@ class Catalog:
                 frame="icrs",
                 unit="deg",
             )
-            sc = StarCluster(cl, coords, members)
+            sc = StarCluster(cl, coords, members, params)
             self.star_clusters[cl] = sc
 
     def get_all_clusters(self) -> dict[StarCluster]:

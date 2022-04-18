@@ -1,4 +1,4 @@
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, dash_table
 import numpy as np
 import plotly.express as px
 
@@ -22,17 +22,18 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
             ),
             html.Div(
                 [
-                    dcc.Graph(id="spatial-graphic", style={"height": "45vh"}),
-                    dcc.Graph(id="pm-graphic", style={"height": "45vh"}),
+                    dcc.Graph(id="spatial-graphic", style={"height": "40vh"}),
+                    dcc.Graph(id="pm-graphic", style={"height": "40vh"}),
                 ],
                 style={"width": "40vw", "display": "inline-block"},
             ),
             html.Div(
                 [
-                    dcc.Graph(id="cmd-graphic", style={"height": "90vh"}),
+                    dcc.Graph(id="cmd-graphic", style={"height": "80vh"}),
                 ],
-                style={"width": "58vw", "height": "90vh", "display": "inline-block"},
+                style={"width": "58vw", "height": "80vh", "display": "inline-block"},
             ),
+            html.Div(id="table-cluster-params", style={"overflow": "scroll"}),
         ]
     )
 
@@ -55,6 +56,7 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
         Output("spatial-graphic", "figure"),
         Output("pm-graphic", "figure"),
         Output("cmd-graphic", "figure"),
+        Output("table-cluster-params", "children"),
         Input("cluster-selection-dropdown", "value"),
         Input("spatial-graphic", "selectedData"),
         Input("pm-graphic", "selectedData"),
@@ -65,6 +67,7 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
     ):
         cluster = input_dict[selected_cluster]
         df = cluster.datatable.to_pandas()
+        df = df.rename(columns={"pmRA": "pmRA_"})
         selectedpoints = df.index
         for selected_data in [
             spatial_selected_data,
@@ -75,15 +78,29 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
                 selectedpoints = np.intersect1d(
                     selectedpoints, [p["customdata"] for p in selected_data["points"]]
                 )
-        
+
         # Reverse axis for CMD plot
         fig3 = get_figure(df, "BP-RP", "Gmag", selectedpoints, spatial_selected_data)
         fig3["layout"]["yaxis"]["autorange"] = "reversed"
-        
+
+        # Create datatable
+        dfp = cluster.paramtable.to_pandas()
+        dt = dash_table.DataTable(
+            data=dfp.to_dict("records"),
+            columns=[
+                {
+                    "name": i,
+                    "id": i,
+                }
+                for i in dfp.columns
+            ],
+        )
+
         return [
             get_figure(df, "RA_ICRS", "DE_ICRS", selectedpoints, spatial_selected_data),
             get_figure(df, "pmRA_", "pmDE", selectedpoints, spatial_selected_data),
             fig3,
+            dt,
         ]
 
     return app
