@@ -16,8 +16,8 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
             html.Div(
                 [
                     dcc.Dropdown(
-                        cluster_names, "NGC_2360", id="cluster-selection-dropdown"
-                    )
+                        cluster_names, "NGC_2360", id="cluster-selection-dropdown", style={"width": "70vw"}
+                    ),
                 ],
             ),
             html.Div(
@@ -32,6 +32,12 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
                     dcc.Graph(id="cmd-graphic", style={"height": "80vh"}),
                 ],
                 style={"width": "58vw", "height": "80vh", "display": "inline-block"},
+            ),
+            html.Div(
+                [
+                    html.Button("Download Plots", id="btn-download-plots", style={"width": "10vw"}),
+                    dcc.Download(id="download-plots")
+                ]
             ),
             html.Div(id="table-cluster-params", style={"overflow": "scroll"}),
         ]
@@ -67,7 +73,7 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
     ):
         cluster = input_dict[selected_cluster]
         df = cluster.datatable.to_pandas()
-        df = df.rename(columns={"pmRA": "pmRA_"})
+        df = df.rename(columns={"pmRA": "pmRA_", "GaiaDR2": "Gaia", "GaiaEDR3": "Gaia"})
         selectedpoints = df.index
         for selected_data in [
             spatial_selected_data,
@@ -102,5 +108,13 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
             fig3,
             dt,
         ]
+
+    @app.callback(
+        Output("download-plots", "data"),
+        Input("btn-download-plots", "n_clicks"),
+        prevent_initial_call=True,
+    )
+    def get_plots(n_clicks):
+        return dict(content="TEST", filename="test.txt")
 
     return app
