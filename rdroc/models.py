@@ -5,7 +5,7 @@ from astropy.coordinates import SkyCoord
 from astropy import table
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class StarCluster:
     """A Star Cluster representation."""
 
@@ -15,7 +15,7 @@ class StarCluster:
     paramtable: table.Table = field(repr=False)
 
 
-@dataclass
+@dataclass(slots=True)
 class Catalog:
     """A catalog representation."""
 
