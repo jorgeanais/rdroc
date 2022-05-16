@@ -33,6 +33,12 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
                 ],
                 style={"width": "58vw", "height": "80vh", "display": "inline-block"},
             ),
+            html.Div(
+                [
+                    dcc.Dropdown(id ='cmd_xaxis_selector-dropdown', options=['BP-RP', 'Gmag'], value='BP-RP', style={"width": "40vw"}),
+                    dcc.Dropdown(id ='cmd_yaxis_selector-dropdown', options=['BP-RP', 'Gmag'], value='Gmag', style={"width": "40vw"}),
+                ],
+            ),
             html.Div(id="table-cluster-params", style={"overflow": "scroll"}),
         ]
     )
@@ -57,13 +63,17 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
         Output("pm-graphic", "figure"),
         Output("cmd-graphic", "figure"),
         Output("table-cluster-params", "children"),
+        Output("cmd_xaxis_selector-dropdown", "options"),
+        Output("cmd_yaxis_selector-dropdown", "options"),
         Input("cluster-selection-dropdown", "value"),
         Input("spatial-graphic", "selectedData"),
         Input("pm-graphic", "selectedData"),
         Input("cmd-graphic", "selectedData"),
+        Input("cmd_xaxis_selector-dropdown", "value"),
+        Input("cmd_yaxis_selector-dropdown", "value"),
     )
     def update_figure(
-        selected_cluster, spatial_selected_data, pm_selected_data, cmd_selected_data
+        selected_cluster, spatial_selected_data, pm_selected_data, cmd_selected_data, cmd_xaxis, cmd_yaxis
     ):
         cluster = input_dict[selected_cluster]
         df = cluster.datatable.to_pandas()
@@ -80,7 +90,7 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
                 )
 
         # Reverse axis for CMD plot
-        fig3 = get_figure(df, "BP-RP", "Gmag", selectedpoints, spatial_selected_data)
+        fig3 = get_figure(df, cmd_xaxis, cmd_yaxis, selectedpoints, spatial_selected_data)
         fig3["layout"]["yaxis"]["autorange"] = "reversed"
 
         # Create datatable
@@ -96,11 +106,17 @@ def dash_plot(input_dict: dict[str, StarCluster]) -> Dash:
             ],
         )
 
+        # Available columns in datatable to plot
+        data_columns = [{'label' :k, 'value' :k} for k in df.columns]
+
         return [
             get_figure(df, "RA_ICRS", "DE_ICRS", selectedpoints, spatial_selected_data),
             get_figure(df, "pmRA_", "pmDE", selectedpoints, spatial_selected_data),
             fig3,
             dt,
+            data_columns,
+            data_columns
         ]
+    
 
     return app

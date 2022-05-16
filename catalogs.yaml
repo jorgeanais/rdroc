@@ -5,9 +5,9 @@
       clusters_params: table1
       cluster_members: nodup
 
-- name: Hao22
-  cds_id: J/A+A/660/A4
-  author: Hao et al. 2022
-  table_names:
-      clusters_params: table1
-      cluster_members: table2
+# - name: Hao22
+#   cds_id: J/A+A/660/A4
+#   author: Hao et al. 2022
+#   table_names:
+#       clusters_params: table1
+#       cluster_members: table2
